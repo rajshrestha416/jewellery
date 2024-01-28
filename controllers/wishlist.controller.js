@@ -15,7 +15,7 @@ class WishListController {
             },
             {
                 path: "product",
-                select: "product_name product_sku variant"
+                select: "product_name product_sku price images"
             }]);
 
             if (wishlist) {
@@ -33,7 +33,7 @@ class WishListController {
                 },
                 {
                     path: "product",
-                    select: "product_name product_sku variant"
+                    select: "product_name product_sku price images"
                 }])
             }
             return res.status(httpStatus.OK).json({
@@ -64,7 +64,7 @@ class WishListController {
             },
             {
                 path: "product",
-                select: "product_name product_sku variant"
+                select: "product_name product_sku price images"
             }]).sort(sort).limit(size).skip((page - 1) * size);
 
             return res.status(httpStatus.OK).json({

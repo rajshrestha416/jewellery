@@ -10,12 +10,15 @@ class ProductController {
     productValidationSchema = Joi.object({
         product_name: Joi.string().required(),
         category: Joi.string().required(),
-        variant: Joi.array().items({
-            sku: Joi.string().required(),
-            stock: Joi.number().required(),
-            price: Joi.number().min(10),
-            variant_type: Joi.array()
-        })
+        description: Joi.string().required(),
+        // variant: Joi.array().items({
+        //     sku: Joi.string().required(),
+        //     stock: Joi.number().required(),
+        //     price: Joi.number().min(10),
+        //     variant_type: Joi.array()
+        // })
+        price: Joi.number().min(10),
+        stock: Joi.number()
     });
 
 
@@ -34,7 +37,7 @@ class ProductController {
     };
 
     addProduct = async (req, res) => {
-        upload.any()(req, res, async err => {
+        upload.array('images')(req, res, async err => {
             if (err) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     success: false,
@@ -42,8 +45,10 @@ class ProductController {
                 });
             }
             try {
-                req.body.variant = JSON.parse(req.body.variant);
-                let { product_name, description, category, variant } = req.body;
+                const { product_name, description, category, price, stock } = req.body;
+
+                //add path image
+                const images = await Promise.all(req.files.map(value => value.path))
 
                 const { error } = this.productValidationSchema.validate(req.body);
 
@@ -54,10 +59,11 @@ class ProductController {
                     });
                 }
 
-                Promise.all(req.files.map(value => {
-                    const variantIndex = variant.findIndex(ele => ele.sku === value.fieldname);
-                    if (variantIndex >= 0) variant[variantIndex].images = [value.path];
-                }));
+                // Promise.all(req.files.map(value => {
+                //     const variantIndex = variant.findIndex(ele => ele.sku === value.fieldname);
+                //     const image = variant[variantIndex].images || []
+                //     if (variantIndex >= 0) variant[variantIndex].images = [value.path];
+                // }));
 
                 const checkProduct = await productModel.findOne({
                     product_name,
@@ -73,7 +79,7 @@ class ProductController {
                 const product_sku = await this.skuGenerator(product_name);
 
                 const product = await productModel.create({
-                    product_name, product_sku, description, category, variant
+                    product_name, product_sku, description, category, price, images, stock
                 });
 
                 return res.status(httpStatus.OK).json({
@@ -110,7 +116,7 @@ class ProductController {
             if(req.query.date){
                 sort = {
                     ...sort,
-                    '_id': date
+                    '_id': parseInt(req.query.date)
                 };
             }
 
@@ -118,7 +124,7 @@ class ProductController {
                 console.log("price", req.query.price)
                 sort = {
                     // ...sort,
-                    'variant.0.price': parseInt(req.query.price)
+                    'price': parseInt(req.query.price)
                 };
             }
 
@@ -129,7 +135,7 @@ class ProductController {
                 };
             }
             console.log("sort", sort)
-            const products = await productModel.find(searchQuery).select("product_name description category product_sku variant").populate({
+            const products = await productModel.find(searchQuery).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
             }).skip((page - 1) * size).limit(size).sort(sort);
@@ -160,7 +166,7 @@ class ProductController {
             const sku = req.params.sku;
             const product = await productModel.findOne({
                 product_sku: sku
-            }).select("product_name description category product_sku variant").populate({
+            }).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
             });
@@ -194,7 +200,7 @@ class ProductController {
 
             try {
                 const id = req.params.id;
-                req.body.variant = JSON.parse(req.body.variant);
+                // req.body.variant = JSON.parse(req.body.variant);
 
                 const product = await productModel.findById(id);
                 if (!product) {
@@ -204,27 +210,37 @@ class ProductController {
                     });
                 }
 
-                if (req.body.product_name !== product.product_name) {
+                if (req.body.product_name && req.body.product_name !== product.product_name) {
                     req.body.product_sku = await this.skuGenerator(req.body.product_name);
                 }
 
+                let images = product.images
+                const toRemove = req.body.replace_images_paths
+                if(toRemove && toRemove.length> 0) {
+                    images = images.filter(ele=> !toRemove.includes(ele))
+                }
+                req.body.images = images
                 if (req.files) {
+                    const newImages = await Promise.all(req.files.map(value => value.path))
+                    req.body.images = images.concat(newImages)
+
                     //change image
-                    Promise.all(req.files.map(value => {
-                        const variantIndex = req.body.variant.findIndex(ele => ele.sku === value.fieldname);
-                        console.log(variantIndex, req.body.variant);
-                        if (variantIndex >= 0) req.body.variant[variantIndex].images = [value.path];
-                    }));
+                    // Promise.all(req.files.map(value => {
+                    //     const variantIndex = req.body.variant.findIndex(ele => ele.sku === value.fieldname);
+                    //     console.log(variantIndex, req.body.variant);
+                    //     if (variantIndex >= 0) req.body.variant[variantIndex].images = [value.path];
+                    // }));
                 }
 
-                await productModel.findByIdAndUpdate(
+                const updatedProduct = await productModel.findByIdAndUpdate(
                     id,
                     req.body,
                     { new: true }
                 );
                 return res.status(httpStatus.OK).json({
                     success: true,
-                    msg: "Product Updated!!"
+                    msg: "Product Updated!!",
+                    data: updatedProduct
                 });
             } catch (error) {
                 console.log("error", error);
@@ -255,6 +271,7 @@ class ProductController {
                 msg: "Product Deleted!!"
             });
         } catch (error) {
+            console.log(error)
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"

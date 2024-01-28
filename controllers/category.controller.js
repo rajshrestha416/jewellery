@@ -90,6 +90,10 @@ class CategoryController {
         try {
             const {page=1, size=10, sort = {_id:-1}} = req.query
 
+            let searchQuery = {
+                is_active: true,
+                is_deleted: false
+            }
             if (req.query.search) {
                 searchQuery = {
                     ...searchQuery,
@@ -97,10 +101,7 @@ class CategoryController {
                 };
             }
 
-            const categories = await categoryModel.find({
-                is_active: true,
-                is_deleted: false
-            }).select("name order createdAt").skip((page-1) * size).limit(size).sort(sort)
+            const categories = await categoryModel.find(searchQuery).select("name order createdAt").skip((page-1) * size).limit(size).sort(sort)
 
             const totalCount = await categoryModel.countDocuments({
                 is_active: true,
@@ -118,7 +119,7 @@ class CategoryController {
         } catch (error) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
-                msg: "Something Went Wrong!!"
+                msg: error.message
             });
         }
     };
