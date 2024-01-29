@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const CategorySchema = new Schema({
     name: { type: String, required: true },
+    image: {type: String},
     parent_category: { type: Schema.Types.ObjectId, ref: 'Category' },
     is_deleted: { type: Boolean, default: false },
     is_active: { type: Boolean, default: true },
