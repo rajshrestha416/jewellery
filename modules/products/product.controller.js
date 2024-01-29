@@ -1,7 +1,7 @@
 const httpStatus = require("http-status");
-const productModel = require("../models/product.model");
+const productModel = require("./product.model");
 const Joi = require("joi");
-const upload = require("../middlewares/upload");
+const upload = require("../../middlewares/upload");
 
 class ProductController {
     // constructor(){

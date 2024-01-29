@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const httpStatus = require('http-status');
-const userModel = require('../models/user.model');
+const userModel = require('../modules/users/user.model');
 
 const decodeToken = (authorization) => {
   try {

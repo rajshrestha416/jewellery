@@ -1,4 +1,4 @@
-const CartController = require("../controllers/cart.controller");
+const CartController = require("../modules/carts/cart.controller");
 const { verifyUser, verifyAuthorization } = require("../middlewares/auth.middlerware");
 
 const router = require("express").Router()

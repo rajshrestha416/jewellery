@@ -1,6 +1,6 @@
 
 const httpStatus = require("http-status");
-const wishlistModel = require("../models/wishlist.model");
+const wishlistModel = require("./wishlist.model");
 
 class WishListController {
 

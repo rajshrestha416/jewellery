@@ -1,10 +1,10 @@
 const Joi = require("joi");
 const httpStatus = require("http-status");
-const userModel = require("../models/user.model");
-const cartModel = require("../models/cart.model");
+const userModel = require("./user.model");
+const cartModel = require("../carts/cart.model");
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken");
-const upload = require("../middlewares/upload");
+const upload = require("../../middlewares/upload");
 
 class UserController {
     userValidationSchema = Joi.object({

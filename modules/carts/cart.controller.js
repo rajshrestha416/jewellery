@@ -1,10 +1,10 @@
 const httpStatus = require("http-status");
-const productModel = require("../models/product.model");
+const productModel = require("../products/product.model");
 const Joi = require("joi");
-const cartItemModel = require("../models/cartItem.model");
-const cartModel = require("../models/cart.model");
-const UserController = require("../controllers/user.controller");
-const userModel = require("../models/user.model");
+const cartItemModel = require("./cartItem.model");
+const cartModel = require("./cart.model");
+const UserController = require("../users/user.controller");
+const userModel = require("../users/user.model");
 const userController = new UserController();
 
 class OrderController {

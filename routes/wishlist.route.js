@@ -1,4 +1,4 @@
-const WishListContrller = require("../controllers/wishlist.controller");
+const WishListContrller = require("../modules/wishlist/wishlist.controller");
 const { verifyUser } = require("../middlewares/auth.middlerware");
 
 const router = require("express").Router()

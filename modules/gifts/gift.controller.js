@@ -1,6 +1,6 @@
 const Joi = require("joi");
-const upload = require("../middlewares/upload");
-const giftModel = require("../models/gift.model");
+const upload = require("../../middlewares/upload");
+const giftModel = require("./gift.model");
 const httpStatus = require("http-status");
 
 class GiftController {

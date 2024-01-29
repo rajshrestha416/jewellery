@@ -1,5 +1,5 @@
 const httpStatus = require("http-status");
-const categoryModel = require("../models/category.model");
+const categoryModel = require("./category.model");
 const Joi = require("joi");
 
 class CategoryController {
