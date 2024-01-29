@@ -114,7 +114,17 @@ class CategoryController {
                 };
             }
 
-            const categories = await categoryModel.find(searchQuery).select("name order image createdAt").skip((page - 1) * size).limit(size).sort(sort);
+            let categories = await categoryModel.find(searchQuery).select("name order image createdAt").skip((page - 1) * size).limit(size).sort(sort);
+
+            categories = await Promise.all(
+                categories.map(async value => {
+                    value = value.toJSON();
+                    value.product_count = await productModel.countDocuments({
+                        category: value._id
+                    });
+                    return value;
+                })
+            );
 
             const totalCount = await categoryModel.countDocuments({
                 is_active: true,
