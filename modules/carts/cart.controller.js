@@ -329,27 +329,24 @@ class OrderController {
             }
             if (req.query.email) {
                 const user = await userModel.findOne({
-                    email: req.query.email,
+                    email: {$regex: req.query.email, $options:'i'},
                     is_deleted: false
                 });
-
-                const cart = await cartModel.distinct('_id', {user_id: user._id})
-                console.log("cart", cart)
-                if (cart.length) {
-                    searchQuery = {
-                        ...searchQuery,
-                        cart: {$in:cart}
-                    };
+                let cart = []
+                if(user){
+                    cart = await cartModel.distinct('_id', { user_id: user._id });
                 }
+                searchQuery = {
+                    ...searchQuery,
+                    cart: { $in: cart }
+                };
             }
             if (req.query.cart_no) {
-                const cart = await cartModel.distinct('_id', {cart_no: req.query.cart_no})
-                if (cart.length) {
-                    searchQuery = {
-                        ...searchQuery,
-                        cart: {$in:cart}
-                    };
-                }
+                const cart = await cartModel.distinct('_id', { cart_no: req.query.cart_no });
+                searchQuery = {
+                    ...searchQuery,
+                    cart: { $in: cart }
+                };
             }
             // if (req.query.search) {
             //     if (req.query.search == Number(req.query.search)) {
@@ -375,7 +372,7 @@ class OrderController {
             //     }
             // }
 
-            console.log("searchQuery", JSON.stringify(searchQuery))
+            console.log("searchQuery", JSON.stringify(searchQuery));
             const orders = await cartItemModel.find(searchQuery).populate({
                 path: "cart",
                 select: "cart_no user_id total discount grand_total",
