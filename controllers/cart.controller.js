@@ -354,6 +354,9 @@ class OrderController {
                     path: "user_id",
                     select: "firstname lastname email contact"
                 }
+            }).populate({
+                path: "item",
+                select: "product_name description category product_sku price images"
             }).skip((page - 1) * size).limit(size);
 
             const totalCount = await cartItemModel.countDocuments({
