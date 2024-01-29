@@ -282,6 +282,38 @@ class UserController {
             }
         });
     };
+
+    changePassword = async (req, res) => {
+        try {
+            const {oldpassword, newpassword} = req.body
+
+            //check if old password matches
+            const checkPassword = bcrypt.compare(oldpassword, req.user.password)
+            if(!checkPassword){
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    success: false,
+                    msg: "Invalid Credential!!"
+                });
+            }
+            bcrypt.genSalt(10, async (error, salt) => {
+                bcrypt.hash(newpassword, salt, async (error, hash) => {
+                    await userModel.findByIdAndUpdate(req.user._id, {
+                        password: hash
+                    },{new: true})
+                });
+            });
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "Password Changed!!"
+            })
+        } catch (error) {
+            console.log("error", error)
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                    success: false,
+                    msg: "Something Went Wrong!!"
+                });
+        }
+    }
 }
 
 module.exports = UserController;

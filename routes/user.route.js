@@ -16,6 +16,8 @@ router.put('/update-profile/:id', verifyUser, userController.updateProfile)
 
 router.put('/upload-pp', verifyUser, userController.uploadPP)
 
+router.put('/change-password', verifyUser, userController.changePassword)
+
 router.delete('/delete-user/:id', verifyUser, verifyAuthorization, userController.deleteUser)
 
 
