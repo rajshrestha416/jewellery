@@ -332,18 +332,22 @@ class OrderController {
                     const cart = await cartModel.findOne({
                         cart_no: req.query.search
                     });
-                    searchQuery = {
-                        ...searchQuery,
-                        cart_no: cart._id
-                    };
+                    if(cart){
+                        searchQuery = {
+                            ...searchQuery,
+                            cart_no: cart._id
+                        };
+                    }
                 } else {
                     const user = await userModel.findOne({
                         email: req.query.search
                     });
-                    searchQuery = {
-                        ...searchQuery,
-                        user_id: user._id
-                    };
+                    if(user){
+                        searchQuery = {
+                            ...searchQuery,
+                            user_id: user._id
+                        };
+                    }
                 }
             }
 
