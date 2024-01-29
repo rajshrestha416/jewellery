@@ -2,6 +2,7 @@ const httpStatus = require("http-status");
 const categoryModel = require("./category.model");
 const Joi = require("joi");
 const upload = require("../../middlewares/upload");
+const productModel = require("../products/product.model");
 
 class CategoryController {
 
