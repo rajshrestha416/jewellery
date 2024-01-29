@@ -268,9 +268,9 @@ class OrderController {
                 await cartModel.findByIdAndUpdate(checkCartItem.cart, { status: "COMPLETED" });
             }
 
-            return res.status(httpStatus.NOT_FOUND).json({
-                success: false,
-                msg: "Cart Item not found."
+            return res.status(httpStatus.OK).json({
+                success: true,
+                msg: "Order Status Changed"
             });
 
         } catch (error) {
@@ -356,11 +356,17 @@ class OrderController {
                 }
             }).skip((page - 1) * size).limit(size);
 
+            const totalCount = await cartItemModel.countDocuments({
+                status: { $nin: ["CART", "REMOVED"] }
+            })
 
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Orders",
-                data: orders
+                data: orders,
+                page,
+                size,
+                totalCount
             });
         } catch (error) {
             console.log("error", error);
