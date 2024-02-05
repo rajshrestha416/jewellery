@@ -59,7 +59,7 @@ class ReviewController {
         try {
             const { page = 1, size = 10 } = req.query;
 
-            const reviews = await reviewModel.find({ product: req.params.product }).skip((page - 1) * size).limit(size);
+            const reviews = await reviewModel.find({ product: req.params.product }).populate({path:'user', select: '-password -__v -createdAt -updatedAt'}).skip((page - 1) * size).limit(size);
 
             return res.status(httpStatus.OK).json({
                 success: true,

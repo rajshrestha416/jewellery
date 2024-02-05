@@ -11,9 +11,6 @@ const ReviewSchema = new Schema({
     },
     message: {
         type: String
-    },
-    updatedAt: {
-        type: Date, default: Date.now()
     }
 }, {
     timestamps: true
