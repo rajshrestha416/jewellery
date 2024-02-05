@@ -2,6 +2,7 @@ const httpStatus = require("http-status");
 const productModel = require("./product.model");
 const Joi = require("joi");
 const upload = require("../../middlewares/upload");
+const reviewModel = require("../reviews/review.model");
 
 class ProductController {
     // constructor(){
@@ -48,7 +49,7 @@ class ProductController {
                 const { product_name, description, category, price, stock } = req.body;
 
                 //add path image
-                const images = await Promise.all(req.files.map(value => value.path))
+                const images = await Promise.all(req.files.map(value => value.path));
 
                 const { error } = this.productValidationSchema.validate(req.body);
 
@@ -106,22 +107,22 @@ class ProductController {
                 is_deleted: false
             };
 
-            if(req.query.category){
+            if (req.query.category) {
                 searchQuery = {
                     ...searchQuery,
                     category: req.query.category
                 };
             }
-            
-            if(req.query.date){
+
+            if (req.query.date) {
                 sort = {
                     ...sort,
                     '_id': parseInt(req.query.date)
                 };
             }
 
-            if(req.query.price){
-                console.log("price", req.query.price)
+            if (req.query.price) {
+                console.log("price", req.query.price);
                 sort = {
                     // ...sort,
                     'price': parseInt(req.query.price)
@@ -134,7 +135,7 @@ class ProductController {
                     product_name: { $regex: req.query.search, $options: 'i' }
                 };
             }
-            console.log("sort", sort)
+            console.log("sort", sort);
             const products = await productModel.find(searchQuery).select("product_name description category product_sku price images stock").populate({
                 path: "category",
                 select: "_id name"
@@ -153,7 +154,7 @@ class ProductController {
                 page: parseInt(page)
             });
         } catch (error) {
-            console.log("err", error)
+            console.log("err", error);
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
@@ -176,6 +177,18 @@ class ProductController {
                     msg: "Product Not Found!!"
                 });
             }
+            const rating = await reviewModel.aggregate([
+                { $match: { product: product._id } },
+                {
+                    $group: {
+                        _id: null,
+                        rating: { $avg: '$rating' }
+                    }
+                },
+            ]);
+
+            product = product.toJSON();
+            product.rating = rating.length ? rating[0].rating : 0;
             return res.status(httpStatus.OK).json({
                 success: true,
                 msg: "Product!!",
@@ -214,15 +227,15 @@ class ProductController {
                     req.body.product_sku = await this.skuGenerator(req.body.product_name);
                 }
 
-                let images = product.images
-                const toRemove = req.body.replace_images_paths
-                if(toRemove && toRemove.length> 0) {
-                    images = images.filter(ele=> !toRemove.includes(ele))
+                let images = product.images;
+                const toRemove = req.body.replace_images_paths;
+                if (toRemove && toRemove.length > 0) {
+                    images = images.filter(ele => !toRemove.includes(ele));
                 }
-                req.body.images = images
+                req.body.images = images;
                 if (req.files) {
-                    const newImages = await Promise.all(req.files.map(value => value.path))
-                    req.body.images = images.concat(newImages)
+                    const newImages = await Promise.all(req.files.map(value => value.path));
+                    req.body.images = images.concat(newImages);
 
                     //change image
                     // Promise.all(req.files.map(value => {
@@ -271,7 +284,7 @@ class ProductController {
                 msg: "Product Deleted!!"
             });
         } catch (error) {
-            console.log(error)
+            console.log(error);
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 msg: "Something Went Wrong!!"
