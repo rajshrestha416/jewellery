@@ -199,9 +199,9 @@ class OrderController {
 
     checkout = async (req, res) => {
         try {
-            const { cart_id } = req.params;
+            const { purchase_order_id, purchase_order_name } = req.query;
 
-            const shipping_address = req.body.shipping_address;
+            const shipping_address = purchase_order_name;
 
             if (!shipping_address && shipping_address !== "") {
                 return res.status(httpStatus.BAD_REQUEST).json({
@@ -209,6 +209,42 @@ class OrderController {
                     msg: "Please Add Shipping Address!!"
                 });
             }
+
+            //Update CartItem Status
+            const cartItems = await cartItemModel.updateMany({
+                cart: purchase_order_id
+            },
+                {
+                    status: "ORDER"
+                });
+
+            //Update Cart Status
+            const cart = await cartModel.findOneAndUpdate({ _id: purchase_order_id }, {
+                status: "ORDER"
+            });
+
+            //create 
+            await userController.createCart(cart.user_id);
+
+            res.writeHead(302, {
+                Location: `http://localhost:3000/profile`,
+            });
+            res.end();
+            return null;
+        } catch (error) {
+            res.writeHead(302, {
+                Location: `http://localhost:3000/profile`,
+            });
+            res.end();
+            return null;
+        }
+    };
+
+    checkoutMobile = async (req, res) => {
+        try {
+            const { cart_id } = req.params;
+
+            const shipping_address = req.body.shipping_address;
 
             //Update CartItem Status
             const cartItems = await cartItemModel.updateMany({
@@ -220,7 +256,8 @@ class OrderController {
 
             //Update Cart Status
             const cart = await cartModel.findOneAndUpdate({ _id: cart_id }, {
-                status: "ORDER"
+                status: "ORDER",
+                shipping_address: shipping_address
             });
 
             //create 
@@ -228,8 +265,9 @@ class OrderController {
 
             return res.status(httpStatus.OK).json({
                 success: true,
-                msg: "Checkout Completed!!"
-            });
+                msg: "Checkout Completed"
+            })
+
         } catch (error) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 success: false,
