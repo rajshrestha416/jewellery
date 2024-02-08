@@ -46,7 +46,9 @@ const getRating = async(product) => {
 
 ProductSchema.post('find', async (result) => {
     for(let index in result){
-        result[index] = result[index].toJSON()
+        if (!result[index] instanceof mongoose.Document){
+            result[index] = result[index].toJSON()
+        }
         result[index].rating = await getRating(result[index]._id)
     }
     return result;
